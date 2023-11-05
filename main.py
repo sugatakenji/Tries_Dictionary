@@ -1,6 +1,7 @@
 #Testando a estrutura de Tries
 #Criando a classe dos nodes desse arvore
 import pickle
+from parserXML import *
 class TrieNode:
     #Constructor
     def __init__(self):
@@ -14,6 +15,7 @@ class TrieNode:
         for c in self.child:
             if c != None:
                 nNodes += 1
+        return nNodes
         
 
 def insertKey(root, key, meaning):
@@ -51,50 +53,55 @@ def serialize(root, filename):
 #node is the root node of tree or subtree
 #level is de depth of the node. Root node of tree have depth equal to 0
 def printNode(node, level):
+    global f
     n = 0 #The index of childNode 
     nNode = node.nNodes()#The number of childNumber order
     #Verifica quantos nodes tem. IMportante para ver se colocar vigula no colchete de fechamento 
-    print("Numero de childNodes"+str(nNode))
     for c in node.child:
         if c != None:
             
             letter = chr(ord('a')+n) #Turn the index in a representive letter
             print((level * "    ")+('"'+letter+'"'+': ' + '{')+" ")
-
+            f.write((level * "    ")+('"'+letter+'"'+': ' + '{')+" "+"\n")
             #Print meanig 
-            if (c.meaning != "") and (nNode > 1):
-                print((level + 1) * "    "+"\"meaning\" :"+c.meaning+",")
+            if (c.meaning != "") and (c.nNodes() >> 0):
+                print((level + 1) * "    "+"\"meaning\" : \""+c.meaning+"\",")
+                f.write((level + 1) * "    "+"\"meaning\" : \""+c.meaning+"\","+"\n")
             elif c.meaning != "":
-                print(str(nNode))
-                print((level + 1) * "    "+"\"meaning\" :"+c.meaning)
+                print((level + 1) * "    "+"\"meaning\" : \""+c.meaning+"\"")
+                f.write((level + 1) * "    "+"\"meaning\" : \""+c.meaning+"\"\n")
+
             printNode(c, level + 1) # Now, print the child nodes of this node
             
             #Fecha colchetes do objeto.
             nNode -= 1
             if nNode > 0:
-                print(level * "    " + "},") 
+                print(level * "    " + "},")
+                f.write(level * "    " + "},"+"\n") 
             else:
                 print(level * "    " + "}")
+                f.write(level * "    " + "}"+"\n")
         n += 1
     
 
 if __name__ == "__main__":
+    global f
+    f = open("b.json", "x")
+    f.write("{\n")
+    dictB = dictXML()
     rootNode = TrieNode()
-    insertKey(rootNode, "apple", "Uma fruta")
-    insertKey(rootNode, "app", "Um programa")
-    insertKey(rootNode, "and", "Instrumento para calculo")
-    insertKey(rootNode, "abacaxi", "Instrumento para calculo")
-    insertKey(rootNode, "abacate", "Instrumento para calculo")
-    insertKey(rootNode, "abaca", "Instrumento para calculo")
-    #insertKey(rootNode, "acaju", "Uma cor")
-    #insertKey(rootNode, "azul", "uma cor")
-    #insertKey(rootNode, "abacaxi", "uma fruta")
-    #insertKey(rootNode, "amor", "Sentimento")
-    #insertKey(rootNode, "andorinha", "animal")
-    #insertKey(rootNode, "beijo", "ato de caRINHO")
-    #insertKey(rootNode, "bala", "doce")
-    #insertKey(rootNode, "bolacha", "doce")
-    #insertKey(rootNode, "bolo", "doce")
-    serialize(rootNode,"teste.apk")
+    valid = True
+    for word in dictB:
+        valid = True
+        for c in word[0]:
+            c = c.lower()
+            if ((ord(c) - ord('a')) > 26)  or ((ord(c) - ord('a')) < 0):
+                valid = False
+                print(c)
+                print(ord(c) - ord('a'))
+        if valid:
+            print("foi")
+            insertKey(rootNode, word[0].lower(), word[1])
+        
     printNode(rootNode, 0)
-
+    f.write("}")
